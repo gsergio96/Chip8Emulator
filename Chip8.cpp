@@ -252,7 +252,7 @@ void Chip8::OP_00EE()
 }
 
 /* 1NNN: JP addr 
-Clear the Display */
+Jump to Location nnn*/
 void Chip8::OP_1NNN()
 {
 	uint16_t address = opcode & 0x0FFFu;
@@ -487,12 +487,13 @@ void Chip8::OP_BNNN()
 Set Vx = random byte AND kk*/
 void Chip8::OP_CXKK()
 {
-	uint16_t Vx = (opcode & 0x0F00u) >> 8u;
-	uint16_t byte = (opcode & 0x00FFu);
+	uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+	uint8_t byte = (opcode & 0x00FFu);
 
 	//random byte produces a value between 0x0000 and 0x00FF
 	//just in case, i cast to uint8_t....just to be safe...hopefully
-	registers[Vx] = (uint8_t)(randomByte(randomSeed) & byte);
+	uint8_t r = (uint8_t)(randomByte(randomSeed) & byte);
+	registers[Vx] = r;
 }
 
 /* DXYN: DRW Vx, Vy, nibble

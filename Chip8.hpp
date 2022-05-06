@@ -1,20 +1,19 @@
-/***************************************************
-*  Code is from Austin Morlan's Webisite           *
-*  https://austinmorlan.com/posts/chip8_emulator/  *
-*                                                  *
-*  Comments By: Sergio Gonzalez (ghostlySmG)       *
-*                                                  *
-*  Added lots of comments to hopefully make        *
-*  understanding the code much easier and to be    *
-*  used as reference material for future emulators *
-***************************************************/
-
+///***************************************************
+//*  Code is from Austin Morlan's Webisite           *
+//*  https://austinmorlan.com/posts/chip8_emulator/  *
+//*                                                  *
+//*  Comments By: Sergio Gonzalez (ghostlySmG)       *
+//*                                                  *
+//*  Added lots of comments to hopefully make        *
+//*  understanding the code much easier and to be    *
+//*  used as reference material for future emulators *
+//***************************************************/
 
 #pragma once
 
-//change data type from int to uint_8 and what not
-#include "cstdint"
-#include "random"
+#include <cstdint>
+#include <random>
+
 
 const unsigned int KEY_COUNT = 16;
 const unsigned int MEMORY_SIZE = 4096;
@@ -23,53 +22,19 @@ const unsigned int STACK_LEVELS = 16;
 const unsigned int VIDEO_HEIGHT = 32;
 const unsigned int VIDEO_WIDTH = 64;
 
+
 class Chip8
 {
 public:
-	Chip8();//Constructor
-	~Chip8();//Deconstructor
-
-	uint8_t keypad[KEY_COUNT];
-	uint32_t video[VIDEO_WIDTH * VIDEO_HEIGHT];
-
-	void LoadROM(const char* fileName);
+	Chip8();
+	void LoadROM(char const* filename);
 	void Cycle();
+	~Chip8();
+
+	uint8_t keypad[KEY_COUNT]{};
+	uint32_t video[VIDEO_WIDTH * VIDEO_HEIGHT]{};
 
 private:
-
-	//typedef void () defines a pointer to function type;
-	//in our case, this type is called Chip8Func
-	typedef void (Chip8::* Chip8Func)();
-
-	//PARTS OF CHIP 8
-	//FIXES: added the curly brackets after each member
-	uint8_t registers[REGISTER_COUNT];
-	uint8_t memory[MEMORY_SIZE];
-	uint16_t index;
-	uint16_t pc;
-	uint8_t stack[STACK_LEVELS];
-	uint8_t sp;
-	uint8_t delay;
-	uint8_t sound;
-	uint16_t opcode;
-
-	//create function arrays that return a pointer to a function
-	//instantiate all the contents of the array to point to the 
-	//OP_NULL function
-	//in the Chip8 Constructor we set the indexes we need to point
-	//to the corresponding function
-	Chip8Func table[0xF + 1]{ &Chip8::OP_NULL};
-	Chip8Func table0[0xE + 1]{ &Chip8::OP_NULL };
-	Chip8Func table8[0xE + 1]{ &Chip8::OP_NULL };
-	Chip8Func tableE[0xE + 1]{ &Chip8::OP_NULL };
-	Chip8Func tableF[0x65 + 1]{ &Chip8::OP_NULL };
-
-	//hover over default_random_engine and you see the keyword "using"
-	//so from what i understand, we are taking and using this from the
-	//std class. maybe thats why we need to initialize at the beginning of constructor
-	std::default_random_engine randomSeed;
-	std::uniform_int_distribution<short> randomByte;
-
 	void Table0();
 	void Table8();
 	void TableE();
@@ -110,5 +75,44 @@ private:
 	void OP_FX33(); //FX33: LD B, Vx - Store BCD representation of Vx in memory locations I, I+1, and I+2
 	void OP_FX55(); //FX55: LD [I], Vx - Store registers V0 through Vx in memory starting in location I
 	void OP_FX65(); //FX65: LD Vx, [I] - Read Registers V0 through Vx from memory starting at locatin I
-};
 
+		//PARTS OF CHIP 8
+	//FIXES: added the curly brackets after each member
+	//adding the curly braces forces the variable to be 0. Without the curly brackes,
+	//Place a break point in the cycle and check the values of the variables. theyll be incorrect
+	//with the curly braces, you'll see the variables be 0.
+	//FINAL FIX...HOPEFULLY!
+	//For some reason (at least for me), having registers being initialized before memory causes my emulation to
+	//run buggy. swapping it so that memory is before registers fixes the issue. dont know why that is
+	/*uint8_t registers[REGISTER_COUNT]{};
+	uint8_t memory[MEMORY_SIZE]{};*/
+	uint8_t memory[MEMORY_SIZE]{};
+	uint8_t registers[REGISTER_COUNT]{};
+	uint16_t index{};
+	uint16_t pc{};
+	uint8_t delay{};
+	uint8_t sound{};
+	uint16_t stack[STACK_LEVELS]{};
+	uint8_t sp{};
+	uint16_t opcode{};
+
+	//hover over default_random_engine and you see the keyword "using"
+	//so from what i understand, we are taking and using this from the
+	//std class. maybe thats why we need to initialize at the beginning of constructor
+	std::default_random_engine randomSeed;
+	std::uniform_int_distribution<short> randomByte;
+
+	//typedef void () defines a pointer to function type;
+	//in our case, this type is called Chip8Func
+	typedef void (Chip8::* Chip8Func)();
+	//create function arrays that return a pointer to a function
+	//instantiate all the contents of the array to point to the 
+	//OP_NULL function
+	//in the Chip8 Constructor we set the indexes we need to point
+	//to the corresponding function
+	Chip8Func table[0xF + 1]{ &Chip8::OP_NULL };
+	Chip8Func table0[0xE + 1]{ &Chip8::OP_NULL };
+	Chip8Func table8[0xE + 1]{ &Chip8::OP_NULL };
+	Chip8Func tableE[0xE + 1]{ &Chip8::OP_NULL };
+	Chip8Func tableF[0x65 + 1]{ &Chip8::OP_NULL };
+};
